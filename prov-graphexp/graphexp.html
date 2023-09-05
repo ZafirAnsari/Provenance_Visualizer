@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>Graphexp, graph explorer</title>
+
+	<head>
+		<link rel="stylesheet" href="css/graphStyle.css">
+		<link rel="stylesheet" href="css/styles.css">
+		<link rel="stylesheet" href="https://cdn.linearicons.com/free/1.0.0/icon-font.min.css">
+		
+
+		<script src="http://code.jquery.com/jquery-3.2.1.min.js"></script>
+		
+		<script src="http://d3js.org/d3.v4.min.js"></script>
+		
+		<script src="scripts/graphConf.js"></script>
+		<script src="scripts/graphShapes.js"></script>
+		<script src="scripts/infobox.js"></script>
+		<script src="scripts/graph_viz.js"></script>
+		<script src="scripts/graphio.js"></script>
+		<script src="scripts/utils.js"></script>
+		
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/core.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/md5.js"></script>
+
+		
+
+		<script type="text/javascript">
+			///////////////////////////////////////////////
+			function search_query() {
+				
+				graphio.search_query();
+			}
+		</script>
+		<!-- ------------------------------------------------- -->
+
+	</head>
+
+<body>
+	<div class="nav-bar">
+		<div class="nav container" id="search_bar">
+			<div class="nav inputs_container_top">
+				<div class="nav input_unit_container">
+					<label for="search_field">Vertex Key:</label>
+					<!-- <input name="search_field" id="search_field" value="ID" /> -->
+					<select name="search_field" id="search_field">
+						<option value="ID">ID</option>
+						<option value="PID">Process PID</option>
+						<option value="FILE NAME">FILE NAME</option>
+						<!-- <option value="audi">Audi</option> -->
+					</select>
+					<label class="nav input_label" for="search_value">Vertex Value:</label>
+					<input name="search_value" id="search_value" value="" />
+				</div>
+
+			</div>
+			<div class="nav controls">
+				<button name="search query" onclick="search_query();">Search Vertex</button>
+			</div>
+			<div class="nav controls">
+				<button name="clear" onclick="graph_viz.clear();">Clear</button>
+			</div>
+		</div>
+		<div class="nav container" id="graph_bar">
+			<div class="nav inputs_container_bottom">
+				<div class="nav input_unit_container">
+					<label for="label_field">Vertex
+						Label Filter:</label>
+					<!-- <input name="label_field" id="label_field" value="" /> -->
+					<select name="label_field" id="label_field">
+						<option value="none">None</option>
+						<option value="process">Process</option>
+						<option value="file">File</option>
+						<option value="socket">Socket</option>
+						<option value="zeek">Zeek</option>
+					</select>
+
+				</div>
+				<div class="nav input_unit_container">
+					<label for="limit_field">Results Limit:</label>
+					<input name="limit_field" id="limit_field" value="30" min="1" max="100" type="number" />
+				</div>
+				
+				<div class="nav input_unit_container">
+					<label class="nav input_label" for="nbLayers">Number of Layers</label>
+					<input type="number" id="nbLayers" min="1" max="128" onclick="set_nb_layers()"
+						oninput="set_nb_layers()">
+				</div>
+				<!-- <label class="switch"> -->
+				<div class="nav input_unit_container">
+					<input type="checkbox" name="Freeze" id="freeze-in" />
+
+					<label class="nav input_label" for="freeze-in">Freeze Exploration</label>
+				</div>
+				<!-- <span class="slider"></span>
+				</label> -->
+				<div class="nav input_unit_container">
+					<input type="checkbox" name="showName_box" id="showName" onclick="graphShapes.show_names()"
+						checked />
+					<label class="nav input_label" for="showName">Show Vertex Labels</label>
+				</div>
+				<div class="nav input_unit_container">
+					<input type="checkbox" name="showEdge_box" id="showEdge" onclick="graphShapes.show_names_edges()"
+						checked />
+					<label class="nav input_label" for="showEdge">Show Edge Labels</label>
+				</div>
+				<div class="nav input_unit_container">
+					<input type="checkbox" name="showProcess_box" id="hideProcess"
+						onclick="graphShapes.hide_process_only(true)" />
+					<label class="nav input_label" for="hideProcess"> Hide Process</label>
+				</div>
+				<div class="nav input_unit_container">
+					<input type="checkbox" name="showZEEK_box" id="hideZEEK"
+						onclick="graphShapes.hide_zeek_only(true)" />
+					<label class="nav input_label" for="hideZEEK"> Hide Zeek</label>
+				</div>
+				<div class="nav input_unit_container">
+					<input type="checkbox" name="showRegistry_box" id="hideRegistry"
+						onclick="graphShapes.hide_registry_only(true)" />
+					<label class="nav input_label" for="hideRegistry"> Hide Socket</label>
+					<!-- hide registry->hide socket -->
+				</div>
+				<div class="nav input_unit_container">
+					<input type="checkbox" name="showFILE_box" id="hideFILE"
+						onclick="graphShapes.hide_FILE_only(true)" />
+					<label class="nav input_label" for="hideFILE"> Hide File</label>
+				</div>
+				<div class="nav input_unit_container">
+					<input type="checkbox" name="showNETWORK_box" id="hideNETWORK"
+						onclick="graphShapes.hide_network_only(true)" />
+					<label class="nav input_label" for="hideNETWORK"> Hide Network</label>
+				</div>
+				<div class="nav input_unit_container">
+					<input type="checkbox" name="merge_socket" id="merge_socket"
+						checked />
+					<label class="nav input_label" for="merge_socket"> Merge Socket Events</label>
+				</div>
+				<div class="nav input_unit_container">
+					<input type="checkbox" name="forward_tracking" id="forward_tracking"
+						 checked />
+					<label class="nav input_label" for="forward_tracking"> Enable Forward Tracking</label>
+				</div>
+				<div class="nav input_unit_container">
+					<input type="checkbox" name="backward_tracking" id="backward_tracking"
+						 checked />
+					<label class="nav input_label" for="backward_tracking"> Enable Backward Tracking</label>
+				</div>
+			</div>
+
+		</div>
+	</div>
+	<div class="content">
+		<div class="main" id="main">
+			<svg></svg>
+		</div>
+
+
+		<div class="aside right_bar" id="details" style="pointer-events:auto;">
+			<div id="messageArea"></div>
+			<div id="outputArea"></div>
+			<div id="nodeInfo" style="background-color:transparent;overflow:scroll; height:700px;">
+			</div>
+		</div>
+		
+	</div>
+
+	<div class="footer">
+		<div class="container" style="text-align:center">
+			Process <span class="dotP"></span> &emsp; &emsp;
+			File <span class="dotF"></span>&emsp;&emsp;
+			Network <span class="dotN"></span>&emsp;&emsp;
+			Socket <span class="dotR"></span>&emsp;&emsp;
+			<!-- changed registry to socket -->
+			Zeek <span class="dotZ"></span>
+			<!-- changed zeek to conn -->
+		</div>
+	</div>
+	<!-- INITIALIZATION -->
+	<script type="text/javascript">
+		
+		init_property_bar();
+		// Create the graph canvas in the chosen div element
+		graph_viz.init("#main");
+		// Add the zoom layer to the graph
+		//var svg_graph =
+		graph_viz.addzoom();
+		//graph_viz.layers.set_nb_layers(4);
+
+		// Create the info box for node details
+		infobox.create("#graphInfo", "#nodeInfo"); // from module in infobox.js
+
+		function init_property_bar() {
+			document.getElementById('nbLayers').value = default_nb_of_layers;
+		}
+
+		function attach_property(graph_objects, prop_name, prop_id_nb, item) {
+			var text_base_offset = 10;
+			var text_offset = 10;
+			var prop_id = item + "_" + prop_name;
+			if (item == 'nodes') {
+				elements_text = graph_objects.append("text").style("pointer-events", "none");
+			}
+			else if (item == 'edges') {
+				var elements_text = graph_objects.append("textPath")
+					.attr('class', 'edge_text')
+					.attr('href', function (d, i) { return '#edgepath' + d.id })
+					.style("text-anchor", "middle")
+					.style("pointer-events", "none")
+					.attr("startOffset", "70%");
+				//.text(function (d) {return d.label});
+				prop_id_nb = prop_id_nb + 1;
+			}
+			else {
+				console.log('Bad item name.'); return 1;
+			}
+			elements_text.classed("prop_details", true).classed(prop_id, true)
+				//.attr("x", 12)
+				.attr("dy", function (d) { return graphShapes.node_size(d) + text_base_offset + text_offset * parseInt(prop_id_nb); })
+				//.attr("y", ".31em")
+				.text(function (d) { return get_prop_value(d, prop_name, item); });
+		}
+
+
+		function get_prop_value(d, prop_name, item) {
+			//let COMMUNICATION_METHOD = $('#communication_method').val();
+			if (prop_name in d.properties) {
+				prop_value = d.properties[prop_name]
+				if (item == 'nodes') {
+					if (typeof prop_value === "string") {
+						return prop_value;
+					} else {
+						if ('summary' in prop_value) {
+							return prop_value['summary'];
+						} else if (COMMUNICATION_METHOD == 'GraphSON1') {
+							return prop_value[0].value;
+						}
+					}
+				}
+				else if (item == 'edges') {
+					//console.log(d.properties[prop_name])
+					return d.properties[prop_name];
+				}
+			}
+			else {
+				return "";
+			}
+		}
+
+
+		function set_nb_layers() {
+			var nb_layers = parseInt(document.getElementById('nbLayers').value);
+			//var nb_layers = parseInt(layer_input.getAttribute("value"));
+			//console.log(nb_layers)
+			graph_viz.layers.set_nb_layers(nb_layers);
+
+		}
+
+
+	</script>
+
+</body>
+
+</html>
